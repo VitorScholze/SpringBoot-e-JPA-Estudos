@@ -79,4 +79,99 @@ public class ProdutoController {
 
     return categoria.getProdutos();
 }
+
+
+    @GetMapping("/categoria/{idCategoria}/valor-total")
+    public String totalValorCategoria(@PathVariable Long idCategoria){
+        Categoria categoria = categoriaRepository.findById(idCategoria).orElseThrow(()-> new RuntimeException("Nenhuma categoria encontrada!"));
+        
+        Double total = 0.0;
+        for(Produto p: categoria.getProdutos()){
+            if(p.getPreco() != null){
+                total += p.getPreco();
+            }
+        }
+
+        return "O valor total dos produtos dessa categoria é de: R$" + total;
+    }
+
+
+    @GetMapping("/produtoValioso")
+    public String produtoValioso(){
+        Produto produto = null;
+        int qtdCategorias = 0;
+        for(Produto p: produtoRepository.findAll()){
+            if(p.getCategorias().size() > qtdCategorias){
+                produto = p;
+                qtdCategorias = p.getCategorias().size();
+            }
+            
+        }
+        
+        if(produto == null){
+            return "Produto nao encontrado!";
+        }
+        return "Produto: " + produto.getNome() 
+        + "|| Categoria: " + produto.getCategorias() + "|| Quantidade Categorias: " + qtdCategorias;
+    }
+
+
+@GetMapping("/ProdutoMaisCaroCategoria")
+public String produtoMaisCaroCategoria() {
+
+    String resposta = "";
+
+    for (Categoria c : categoriaRepository.findAll()) {
+
+        Produto produtoMaisCaro = null;
+        Double maiorPreco = 0.0;
+
+        for (Produto p : c.getProdutos()) {
+
+            if (p.getPreco() != null && p.getPreco() > maiorPreco) {
+                maiorPreco = p.getPreco();
+                produtoMaisCaro = p;
+            }
+        }
+
+        if (produtoMaisCaro != null) {
+            resposta += "Categoria: " + c.getNome() + "\n";
+            resposta += "Produto mais caro: " + produtoMaisCaro.getNome() + "\n";
+            resposta += "Preço: R$" + produtoMaisCaro.getPreco() + "\n\n";
+        }
+    }
+
+    if (resposta.isEmpty()) {
+        return "Nenhuma categoria possui produtos com preço!";
+    }
+
+    return resposta;
 }
+
+@GetMapping("produtoMaisExcluisivo")
+public String produtoMaisExcluisivo(){
+    Produto produtoExclusivo = null;
+    Integer menosCategorias = Integer.MAX_VALUE;
+
+   for(Produto p : produtoRepository.findAll()){
+
+    Integer qtdCategorias = 0;
+        qtdCategorias = p.getCategorias().size();
+        if(qtdCategorias < menosCategorias){
+            menosCategorias = qtdCategorias;
+            produtoExclusivo = p;
+    }
+   }
+    if (produtoExclusivo != null) {
+        return "Produto: " + produtoExclusivo.getNome()
+                + " || Quantidade de Categorias: "
+                + menosCategorias;
+
+}
+
+     return "Nenhum produto encontrado!";
+}
+
+
+}
+
